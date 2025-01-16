@@ -1,7 +1,7 @@
 #import packages
 import pygame
 
-#import other files
+#import other local files
 import constants
 from character import Character
 
@@ -19,8 +19,22 @@ moving_right = False
 moving_up = False
 moving_down = False
 
+#scale images
+def scale_img(image, scale):
+    w = image.get_width()
+    h = image.get_height()
+    return pygame.transform.scale(image, (w * scale, h * scale))
+
+#load in multiple images for animations
+animation_list = []
+for i in range(4):
+    #converts the image to match format of game window with transparancy 
+    player_image = pygame.image.load(f"assets/images/characters/elf/idle/{i}.png").convert_alpha()
+    player_image = scale_img(player_image, constants.SCALE)
+    animation_list.append(player_image)
+
 #create player
-player = Character(100, 100)
+player = Character(100, 100, animation_list)
 
 #main game loop
 run = True
@@ -44,6 +58,9 @@ while run:
 
     #move player
     player.move(dx, dy)
+
+    #update player for animations
+    player.update()
 
     #draw player on screen
     player.draw(screen, constants.RED)
