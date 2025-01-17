@@ -1,6 +1,8 @@
 import pygame
 import math
 
+import constants
+
 class Character():
     #constructor, initialize the values
     def __init__(self, x, y, mob_animations, char_type):
@@ -68,10 +70,13 @@ class Character():
             self.update_time = pygame.time.get_ticks()
 
     #drawing on surface
-    def draw(self, surface, color):
+    def draw(self, surface):
         #image faces the direction of movement, image, left/right, up/down
         flipped_image = pygame.transform.flip(self.image, self.flip, False)
         #we still need the rectangle that decides the movement
         #the image is just drawn at the location of the rect
-        surface.blit(flipped_image, self.rect)
-        pygame.draw.rect(surface, color, self, 1)
+        if self.char_type == 0:
+            surface.blit(flipped_image, (self.rect.x, self.rect.y - constants.SCALE * constants.OFFSET))
+        else:
+            surface.blit(flipped_image, self.rect)
+        pygame.draw.rect(surface, constants.RED, self, 1)

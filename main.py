@@ -4,6 +4,7 @@ import pygame
 #import other local files
 import constants
 from character import Character
+from weapon import Weapon
 
 #game creation
 pygame.init()
@@ -25,8 +26,14 @@ def scale_img(image, scale):
     h = image.get_height()
     return pygame.transform.scale(image, (w * scale, h * scale))
 
-#load in multiple images for animations for different types of animations for all characters
+#load in multiple images for animations for different items using same classes
 #names are looped through for the loading of file
+
+#load weapon images 
+weapon = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(), constants.WEAPON_SCALE)
+arrow_image = scale_img(pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(), constants.WEAPON_SCALE)
+
+#load character images
 mob_animations = []
 mob_types = ['elf', 'imp', 'skeleton', 'goblin', 'muddy', 'tiny_zombie', 'big_demon']
 animation_types = ['idle', 'run']
@@ -44,6 +51,11 @@ for mob in mob_types:
 
 #create player
 player = Character(100, 100, mob_animations, 0)
+#player's weapon
+bow = Weapon(weapon, arrow_image)
+
+#sprite groups
+arrow_group = pygame.sprite.Group()
 
 #main game loop
 run = True
@@ -70,9 +82,17 @@ while run:
 
     #update player for animations
     player.update()
+    arrow = bow.update(player)
+    if arrow:
+        arrow_group.add(arrow)
+    for arrow in arrow_group:
+        arrow.update()
 
     #draw player on screen
-    player.draw(screen, constants.RED)
+    player.draw(screen)
+    bow.draw(screen)
+    for arrow in arrow_group:
+        arrow.draw(screen)
     #event handler for exiting
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
