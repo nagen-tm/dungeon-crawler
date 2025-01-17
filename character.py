@@ -5,7 +5,7 @@ import constants
 
 class Character():
     #constructor, initialize the values
-    def __init__(self, x, y, mob_animations, char_type):
+    def __init__(self, x, y, health, mob_animations, char_type):
         self.char_type = char_type
         self.flip = False
         self.animation_list = mob_animations[char_type]
@@ -14,6 +14,9 @@ class Character():
         # set idle vs running, 0 = idle 1 = run
         self.action = 0
         self.running = False
+
+        self.health = health
+        self.alive = True
         #captures time passed to know when to update animation
         self.update_time = pygame.time.get_ticks()
         self.image = self.animation_list[self.action][self.frame_index]
@@ -41,6 +44,10 @@ class Character():
     
     #animation 
     def update(self):
+        #check is char has died
+        if self.health <= 0:
+            self.health = 0
+            self.alive = False
         #check what action the player is performing
         if self.running == True:
             self.update_action(1)
