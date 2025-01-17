@@ -14,7 +14,7 @@ class Character():
         # set idle vs running, 0 = idle 1 = run
         self.action = 0
         self.running = False
-
+        self.score = 0
         self.health = health
         self.alive = True
         #captures time passed to know when to update animation

@@ -5,6 +5,7 @@ import pygame
 import constants
 from character import Character
 from weapon import Weapon
+from items import Item
 
 #game creation
 pygame.init()
@@ -35,6 +36,13 @@ def scale_img(image, scale):
 heart_empty = scale_img(pygame.image.load(f"assets/images/items/heart_empty.png").convert_alpha(), constants.ITEM_SCALE)
 heart_half = scale_img(pygame.image.load(f"assets/images/items/heart_half.png").convert_alpha(), constants.ITEM_SCALE)
 heart_full = scale_img(pygame.image.load(f"assets/images/items/heart_full.png").convert_alpha(), constants.ITEM_SCALE)
+#load coin images
+coin_images = []
+for x in range(4):
+    coin = scale_img(pygame.image.load(f"assets/images/items/coin_f{x}.png").convert_alpha(), constants.ITEM_SCALE)
+    coin_images.append(coin)
+#load potion image
+red_potion = scale_img(pygame.image.load(f"assets/images/items/potion_red.png").convert_alpha(), constants.POTION_SCALE)
 #load weapon images 
 weapon = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(), constants.WEAPON_SCALE)
 arrow_image = scale_img(pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(), constants.WEAPON_SCALE)
@@ -49,11 +57,15 @@ for mob in mob_types:
         temp_list = []
         for i in range(4):
             #converts the image to match format of game window with transparancy 
-            player_image = pygame.image.load(f"assets/images/characters/{mob}/{animation}/{i}.png").convert_alpha()
-            player_image = scale_img(player_image, constants.SCALE)
+            player_image = scale_img(pygame.image.load(f"assets/images/characters/{mob}/{animation}/{i}.png").convert_alpha(), constants.SCALE)
             temp_list.append(player_image)
         animation_list.append(temp_list)
     mob_animations.append(animation_list)
+
+#function for outputting text on screen
+def draw_text(text, font, text_color, x, y):
+    img = font.render(text, True, text_color)
+    screen.blit(img, (x, y))
 
 #function for game display information
 def draw_info():
@@ -70,6 +82,8 @@ def draw_info():
             half_heart_drawn = True
         else:
             screen.blit(heart_empty, (10 + i * 50, 0))
+    #show the score
+    draw_text(f"X{player.score}", font, constants.WHITE, constants.SCREEN_WIDTH - 100, 15)
 
 #damage text class
 class DamageText(pygame.sprite.Sprite):
@@ -89,20 +103,26 @@ class DamageText(pygame.sprite.Sprite):
         if self.counter > 25:
             self.kill()
 
-#create player
+#create instances
 player = Character(100, 100, 70, mob_animations, 0)
-#player's weapon
-bow = Weapon(weapon, arrow_image)
-#sprite groups
-arrow_group = pygame.sprite.Group()
-
-#create enemy
 enemy = Character(200, 300, 100, mob_animations, 1)
+bow = Weapon(weapon, arrow_image)
+
 enemy_list = []
 enemy_list.append(enemy)
 
-#damage text
+#create groups
 damage_text_group = pygame.sprite.Group()
+arrow_group = pygame.sprite.Group()
+item_group = pygame.sprite.Group()
+
+score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images)
+item_group.add(score_coin)
+
+potion = Item(200,200, 1, [red_potion])
+item_group.add(potion)
+coin = Item(400,400, 1, coin_images)
+item_group.add(coin)
 
 #main game loop
 run = True
@@ -142,6 +162,7 @@ while run:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), constants.RED)
             damage_text_group.add(damage_text)
     damage_text_group.update()
+    item_group.update(player)
 
     #draw enemies
     for enemy in enemy_list:
@@ -152,7 +173,9 @@ while run:
     for arrow in arrow_group:
         arrow.draw(screen)
     damage_text_group.draw(screen)
+    item_group.draw(screen)
     draw_info()
+    score_coin.draw(screen)
     #event handler for exiting
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
