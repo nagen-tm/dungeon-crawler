@@ -119,9 +119,9 @@ item_group = pygame.sprite.Group()
 score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images)
 item_group.add(score_coin)
 
-potion = Item(200,200, 1, [red_potion])
+potion = Item(200, 200, 1, [red_potion])
 item_group.add(potion)
-coin = Item(400,400, 1, coin_images)
+coin = Item(400, 400, 0, coin_images)
 item_group.add(coin)
 
 #main game loop
