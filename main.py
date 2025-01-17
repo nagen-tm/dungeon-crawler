@@ -31,7 +31,10 @@ def scale_img(image, scale):
 
 #load in multiple images for animations for different items using same classes
 #names are looped through for the loading of file
-
+#load player health
+heart_empty = scale_img(pygame.image.load(f"assets/images/items/heart_empty.png").convert_alpha(), constants.ITEM_SCALE)
+heart_half = scale_img(pygame.image.load(f"assets/images/items/heart_half.png").convert_alpha(), constants.ITEM_SCALE)
+heart_full = scale_img(pygame.image.load(f"assets/images/items/heart_full.png").convert_alpha(), constants.ITEM_SCALE)
 #load weapon images 
 weapon = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(), constants.WEAPON_SCALE)
 arrow_image = scale_img(pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(), constants.WEAPON_SCALE)
@@ -52,6 +55,21 @@ for mob in mob_types:
         animation_list.append(temp_list)
     mob_animations.append(animation_list)
 
+#function for game display information
+def draw_info():
+    #draw the panel at top of screen
+    pygame.draw.rect(screen, constants.PANEL, (0,0, constants.SCREEN_WIDTH, 50))
+    pygame.draw.line(screen, constants.WHITE, (0, 50), (constants.SCREEN_WIDTH, 50))
+    half_heart_drawn = False
+    #draw lives
+    for i in range(5):
+        if player.health >= ((i + 1) * 20):
+            screen.blit(heart_full, (10 + i * 50, 0))
+        elif (player.health % 20  > 0) and half_heart_drawn ==False:
+            screen.blit(heart_half, (10 + i * 50, 0))
+            half_heart_drawn = True
+        else:
+            screen.blit(heart_empty, (10 + i * 50, 0))
 
 #damage text class
 class DamageText(pygame.sprite.Sprite):
@@ -72,7 +90,7 @@ class DamageText(pygame.sprite.Sprite):
             self.kill()
 
 #create player
-player = Character(100, 100, 100, mob_animations, 0)
+player = Character(100, 100, 70, mob_animations, 0)
 #player's weapon
 bow = Weapon(weapon, arrow_image)
 #sprite groups
@@ -134,6 +152,7 @@ while run:
     for arrow in arrow_group:
         arrow.draw(screen)
     damage_text_group.draw(screen)
+    draw_info()
     #event handler for exiting
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
