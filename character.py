@@ -25,6 +25,7 @@ class Character():
 
     #update the movement before drawing
     def move(self, dx, dy):
+        screen_scroll = [0,0]
         #reset the movement to idle, then check movement
         self.running = False
         if dx != 0 or dy != 0:
@@ -41,7 +42,33 @@ class Character():
         #then update the coords
         self.rect.x += dx
         self.rect.y += dy
+
+        #do we need to scroll the screen for the player
+        if self.char_type == 0:
+            #move left and right
+            right_offset = constants.SCREEN_WIDTH - constants.SCROLL_THRESHOLD
+            if self.rect.right > right_offset:
+                screen_scroll[0] = right_offset - self.rect.right
+                self.rect.right = right_offset
+            if self.rect.left < constants.SCROLL_THRESHOLD:
+                screen_scroll[0] = constants.SCROLL_THRESHOLD - self.rect.left
+                self.rect.left = constants.SCROLL_THRESHOLD 
+            #move up and down
+            bottom_offset = constants.SCREEN_HEIGHT - constants.SCROLL_THRESHOLD
+            if self.rect.bottom > bottom_offset:
+                screen_scroll[1] = bottom_offset - self.rect.bottom
+                self.rect.bottom = constants.SCREEN_HEIGHT - constants.SCROLL_THRESHOLD
+            if self.rect.top < constants.SCROLL_THRESHOLD:
+                screen_scroll[1] = constants.SCROLL_THRESHOLD - self.rect.top
+                self.rect.top = constants.SCROLL_THRESHOLD
+
+        return screen_scroll
     
+    def ai(self, screen_scroll):
+      #reposition based on screen scroll
+      self.rect.x += screen_scroll[0]
+      self.rect.y += screen_scroll[1]
+
     #animation 
     def update(self):
         #check is char has died
