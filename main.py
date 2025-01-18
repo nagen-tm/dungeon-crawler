@@ -6,6 +6,7 @@ import constants
 from character import Character
 from weapon import Weapon
 from items import Item
+from world import World
 
 #game creation
 pygame.init()
@@ -47,6 +48,13 @@ red_potion = scale_img(pygame.image.load(f"assets/images/items/potion_red.png").
 weapon = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(), constants.WEAPON_SCALE)
 arrow_image = scale_img(pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(), constants.WEAPON_SCALE)
 
+#load tile map images
+tile_list = []
+for i in range(constants.TILE_TYPES):
+    tile_img = pygame.image.load(f"assets/images/tiles/{i}.png").convert_alpha()
+    tile_img = pygame.transform.scale(tile_img, (constants.TILE_SIZE, constants.TILE_SIZE))
+    tile_list.append(tile_img)
+
 #load character images
 mob_animations = []
 mob_types = ['elf', 'imp', 'skeleton', 'goblin', 'muddy', 'tiny_zombie', 'big_demon']
@@ -84,6 +92,19 @@ def draw_info():
             screen.blit(heart_empty, (10 + i * 50, 0))
     #show the score
     draw_text(f"X{player.score}", font, constants.WHITE, constants.SCREEN_WIDTH - 100, 15)
+
+#basically the numbers corrolate to the tiles
+#building out the map, 5x5 grid
+world_data = [
+    [7, 7, 7, 7, 7],
+    [7, 0, 1, 2, 7],
+    [7, 3, 4, 5, 7],
+    [7, 6, 6, 6, 7],
+    [7, 7, 7, 7, 7]
+]
+
+world = World()
+world.process_data(world_data, tile_list)
 
 #damage text class
 class DamageText(pygame.sprite.Sprite):
@@ -163,6 +184,9 @@ while run:
             damage_text_group.add(damage_text)
     damage_text_group.update()
     item_group.update(player)
+
+    #draw world
+    world.draw(screen)
 
     #draw enemies
     for enemy in enemy_list:
