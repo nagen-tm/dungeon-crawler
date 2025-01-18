@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 
 import constants
 
@@ -59,17 +60,31 @@ class Arrow(pygame.sprite.Sprite):
         self.dx = math.cos(math.radians(self.angle)) * constants.ARROW_SPEED
         self.dy = -(math.sin(math.radians(self.angle)) * constants.ARROW_SPEED)
 
-    def update(self):
+    def update(self, screen_scroll, enemy_list):
+        #reset vars
+        damage = 0
+        damage_pos = None
         #reposition based on speed
-        self.rect.x += self.dx
-        self.rect.y += self.dy
+        self.rect.x += screen_scroll[0] + self.dx
+        self.rect.y += screen_scroll[1] + self.dy
 
         #cleanup when arrow goes off screen
         if self.rect.right < 0 or self.rect.left > constants.SCREEN_WIDTH or self.rect.bottom < 0 or self.rect.top > constants.SCREEN_HEIGHT:
             #sprite class option
             self.kill()
-
         
+        #check collision with enemies
+        # https://www.pygame.org/docs/ref/rect.html#pygame.Rect.colliderect
+        for enemy in enemy_list:
+            if enemy.rect.colliderect(self.rect) and enemy.alive:
+                damage = 10 + random.randint(-5, 5)
+                damage_pos = enemy.rect
+                enemy.health -= damage
+                #once arrow hits don't let it keep going 
+                self.kill()
+                break
+        
+        return damage, damage_pos
     
     def draw(self, surface):
          surface.blit(self.image, ((self.rect.centerx - int(self.image.get_width()/2)), self.rect.centery - int(self.image.get_height()/2)))
