@@ -25,7 +25,7 @@ class Character():
         self.rect.center = (x, y)
 
     #update the movement before drawing
-    def move(self, dx, dy):
+    def move(self, dx, dy, obstacle_tiles):
         screen_scroll = [0,0]
         #reset the movement to idle, then check movement
         self.running = False
@@ -40,9 +40,23 @@ class Character():
         if dx != 0 and dy != 0:
             dx = dx * (math.sqrt(2)/2)
             dy = dy * (math.sqrt(2)/2)
-        #then update the coords
+        #check collision
         self.rect.x += dx
+        for obstacle in obstacle_tiles:
+            if obstacle[1].colliderect(self.rect):
+                #check which side the collision is
+                if dx > 0:
+                    self.rect.right = obstacle[1].left
+                if dx < 0:
+                    self.rect.left = obstacle[1].right
         self.rect.y += dy
+        for obstacle in obstacle_tiles:
+            if obstacle[1].colliderect(self.rect):
+                #check which side the collision is
+                if dy > 0:
+                    self.rect.bottom = obstacle[1].top
+                if dy < 0:
+                    self.rect.top = obstacle[1].bottom
 
         #do we need to scroll the screen for the player
         if self.char_type == 0:
