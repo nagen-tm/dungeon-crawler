@@ -1,5 +1,6 @@
 #import packages
 import pygame
+import csv
 
 #import other local files
 import constants
@@ -15,6 +16,9 @@ pygame.display.set_caption("Dungeon Crawler Tutorial")
 
 #create clock for maintaining frame rate
 clock = pygame.time.Clock()
+
+#define game variables
+level = 1
 
 #define movement variables
 moving_left = False
@@ -93,15 +97,17 @@ def draw_info():
     #show the score
     draw_text(f"X{player.score}", font, constants.WHITE, constants.SCREEN_WIDTH - 100, 15)
 
-#basically the numbers corrolate to the tiles
-#building out the map, 5x5 grid
-world_data = [
-    [7, 7, 7, 7, 7],
-    [7, 0, 1, 2, 7],
-    [7, 3, 4, 5, 7],
-    [7, 6, 6, 6, 7],
-    [7, 7, 7, 7, 7]
-]
+#create the empty tile list that will be overriden by file
+world_data = []
+for row in range(constants.ROWS):
+    r = [-1] * constants.COLS
+    world_data.append(r)
+#load files created from a level editor
+with open(f"levels/level{level}_data.csv", newline="") as csvfile:
+    reader = csv.reader(csvfile, delimiter= ",")
+    for x, row in enumerate(reader): 
+        for y, tile in enumerate(row):
+            world_data[x][y] = int(tile)
 
 world = World()
 world.process_data(world_data, tile_list)
