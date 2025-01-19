@@ -4,6 +4,7 @@ import csv
 
 #import other local files
 import constants
+import images
 from weapon import Weapon
 from items import Item
 from world import World
@@ -17,7 +18,7 @@ pygame.display.set_caption("Dungeon Crawler Tutorial")
 clock = pygame.time.Clock()
 
 #define game variables
-level = 1
+level = 3
 screen_scroll = [0, 0]
 
 #define movement variables
@@ -29,54 +30,12 @@ moving_down = False
 #define font, with size
 font = pygame.font.Font('assets/fonts/AtariClassic.ttf', 20)
 
-#scale images
-def scale_img(image, scale):
-    w = image.get_width()
-    h = image.get_height()
-    return pygame.transform.scale(image, (w * scale, h * scale))
-
-#load in multiple images for animations for different items using same classes
-#names are looped through for the loading of file
-#load player health
-heart_empty = scale_img(pygame.image.load(f"assets/images/items/heart_empty.png").convert_alpha(), constants.ITEM_SCALE)
-heart_half = scale_img(pygame.image.load(f"assets/images/items/heart_half.png").convert_alpha(), constants.ITEM_SCALE)
-heart_full = scale_img(pygame.image.load(f"assets/images/items/heart_full.png").convert_alpha(), constants.ITEM_SCALE)
-#load coin images
-coin_images = []
-for x in range(4):
-    coin = scale_img(pygame.image.load(f"assets/images/items/coin_f{x}.png").convert_alpha(), constants.ITEM_SCALE)
-    coin_images.append(coin)
-#load potion image
-red_potion = scale_img(pygame.image.load(f"assets/images/items/potion_red.png").convert_alpha(), constants.POTION_SCALE)
-item_images = []
-item_images.append(coin_images)
-item_images.append(red_potion)
-
-#load weapon images 
-weapon = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(), constants.WEAPON_SCALE)
-arrow_image = scale_img(pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(), constants.WEAPON_SCALE)
-
-#load tile map images
-tile_list = []
-for i in range(constants.TILE_TYPES):
-    tile_img = pygame.image.load(f"assets/images/tiles/{i}.png").convert_alpha()
-    tile_img = pygame.transform.scale(tile_img, (constants.TILE_SIZE, constants.TILE_SIZE))
-    tile_list.append(tile_img)
-
-#load character images
-mob_animations = []
-mob_types = ['elf', 'imp', 'skeleton', 'goblin', 'muddy', 'tiny_zombie', 'big_demon']
-animation_types = ['idle', 'run']
-for mob in mob_types:
-    animation_list = []
-    for animation in animation_types:
-        temp_list = []
-        for i in range(4):
-            #converts the image to match format of game window with transparancy 
-            player_image = scale_img(pygame.image.load(f"assets/images/characters/{mob}/{animation}/{i}.png").convert_alpha(), constants.SCALE)
-            temp_list.append(player_image)
-        animation_list.append(temp_list)
-    mob_animations.append(animation_list)
+# get images from separate file to pair down main.py
+weapon, arrow_image, fireball_image = images.weapon()
+heart_empty, heart_half, heart_full = images.health()
+item_images, coin_images = images.items()
+mob_animations = images.mob_animation()
+tile_list = images.tiles()
 
 #function for outputting text on screen
 def draw_text(text, font, text_color, x, y):
@@ -148,6 +107,7 @@ enemy_list = world.enemy_list
 damage_text_group = pygame.sprite.Group()
 arrow_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
+fireball_group = pygame.sprite.Group()
 
 #static coin for score
 score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
@@ -182,18 +142,22 @@ while run:
     #update all objects
     world.update(screen_scroll)
     for enemy in enemy_list:
-        enemy.ai(screen_scroll)
-        enemy.update()
+        fireball = enemy.ai(player, world.obstacle_tiles, screen_scroll, fireball_image)
+        if fireball:
+            fireball_group.add(fireball)
+        if enemy.alive:
+            enemy.update()
     player.update()
     arrow = bow.update(player)
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group:
-        damage, damage_pos = arrow.update(screen_scroll, enemy_list)
+        damage, damage_pos = arrow.update(screen_scroll, world.obstacle_tiles, enemy_list)
         if damage:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), constants.RED)
             damage_text_group.add(damage_text)
     damage_text_group.update()
+    fireball_group.update(screen_scroll, player)
     item_group.update(screen_scroll, player)
 
     #draw world
@@ -208,6 +172,7 @@ while run:
     for arrow in arrow_group:
         arrow.draw(screen)
     damage_text_group.draw(screen)
+    fireball_group.draw(screen)
     item_group.draw(screen)
     draw_info()
     score_coin.draw(screen)

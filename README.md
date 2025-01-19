@@ -14,8 +14,8 @@ Working through [Udemy Tutorial](https://www.udemy.com/course/pygame-dungeon-cra
 - [x] Getting player movement to work
 - [x] Getting sprites and animation in place
 - [x] Adding additional character elements
-- [ ] Create levels
-- [ ] Build enemies
+- [x] Create levels
+- [x] Build enemies with AI movement
 - [ ] Add game menus
 - [ ] Add sounds
 
