@@ -2,6 +2,7 @@ import pygame
 import math
 
 import constants
+import weapon
 
 class Character():
     #constructor, initialize the values
@@ -26,6 +27,7 @@ class Character():
         #enemy checks
         self.hit = False
         self.last_hit = pygame.time.get_ticks()
+        self.last_attack = pygame.time.get_ticks()
         self.stunned = False
 
     #update the movement before drawing
@@ -83,9 +85,10 @@ class Character():
 
         return screen_scroll
     
-    def ai(self, player, obstacle_tiles, screen_scroll):
+    def ai(self, player, obstacle_tiles, screen_scroll, fireball_image):
         clipped_line = ()
         stun_cooldown = 100
+        fireball = None
         #default position
         ai_dx = 0
         ai_dy = 0
@@ -120,7 +123,13 @@ class Character():
                     player.health -= 10
                     player.hit = True
                     player.last_hit = pygame.time.get_ticks()
-
+                #boss 
+                fireball_cooldown = 700
+                if self.boss:
+                    if dist < 500 and pygame.time.get_ticks() - self.last_attack >= fireball_cooldown:
+                        fireball = weapon.Fireball(fireball_image, self.rect.centerx, self.rect.centery, player.rect.centerx, player.rect.centery)
+                        self.last_attack = pygame.time.get_ticks()
+                        
             #check if hit
             if self.hit:
                 self.hit = False
@@ -131,6 +140,8 @@ class Character():
             #reset
             if (pygame.time.get_ticks() - self.last_hit) > stun_cooldown:
                 self.stunned = False
+        
+        return fireball
 
     #animation 
     def update(self):
@@ -181,4 +192,3 @@ class Character():
             surface.blit(flipped_image, (self.rect.x, self.rect.y - constants.SCALE * constants.OFFSET))
         else:
             surface.blit(flipped_image, self.rect)
-        #pygame.draw.rect(surface, constants.RED, self, 1)

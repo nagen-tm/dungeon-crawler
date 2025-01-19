@@ -18,7 +18,7 @@ pygame.display.set_caption("Dungeon Crawler Tutorial")
 clock = pygame.time.Clock()
 
 #define game variables
-level = 1
+level = 3
 screen_scroll = [0, 0]
 
 #define movement variables
@@ -31,7 +31,7 @@ moving_down = False
 font = pygame.font.Font('assets/fonts/AtariClassic.ttf', 20)
 
 # get images from separate file to pair down main.py
-weapon, arrow_image = images.weapon()
+weapon, arrow_image, fireball_image = images.weapon()
 heart_empty, heart_half, heart_full = images.health()
 item_images, coin_images = images.items()
 mob_animations = images.mob_animation()
@@ -107,6 +107,7 @@ enemy_list = world.enemy_list
 damage_text_group = pygame.sprite.Group()
 arrow_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
+fireball_group = pygame.sprite.Group()
 
 #static coin for score
 score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
@@ -141,7 +142,9 @@ while run:
     #update all objects
     world.update(screen_scroll)
     for enemy in enemy_list:
-        enemy.ai(player, world.obstacle_tiles, screen_scroll)
+        fireball = enemy.ai(player, world.obstacle_tiles, screen_scroll, fireball_image)
+        if fireball:
+            fireball_group.add(fireball)
         if enemy.alive:
             enemy.update()
     player.update()
@@ -154,6 +157,7 @@ while run:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), constants.RED)
             damage_text_group.add(damage_text)
     damage_text_group.update()
+    fireball_group.update(screen_scroll, player)
     item_group.update(screen_scroll, player)
 
     #draw world
@@ -168,6 +172,7 @@ while run:
     for arrow in arrow_group:
         arrow.draw(screen)
     damage_text_group.draw(screen)
+    fireball_group.draw(screen)
     item_group.draw(screen)
     draw_info()
     score_coin.draw(screen)

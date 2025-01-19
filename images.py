@@ -46,7 +46,8 @@ def health():
 def weapon():
     weapon = scale_img(pygame.image.load(f"assets/images/weapons/bow.png").convert_alpha(), constants.WEAPON_SCALE)
     arrow_image = scale_img(pygame.image.load(f"assets/images/weapons/arrow.png").convert_alpha(), constants.WEAPON_SCALE)
-    return weapon, arrow_image
+    fireball_image = scale_img(pygame.image.load(f"assets/images/weapons/fireball.png").convert_alpha(), constants.FIREBALL_SCALE)
+    return weapon, arrow_image, fireball_image
 
 def tiles():
     tile_list = []
