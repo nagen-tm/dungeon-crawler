@@ -1,5 +1,6 @@
 #import packages
 import pygame
+from pygame import mixer
 import csv
 
 #import other local files
@@ -8,8 +9,10 @@ import images
 from weapon import Weapon
 from items import Item
 from world import World
+from button import Button
 
 #game creation
+mixer.init()
 pygame.init()
 screen = pygame.display.set_mode((constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
 pygame.display.set_caption("Dungeon Crawler Tutorial")
@@ -19,7 +22,9 @@ clock = pygame.time.Clock()
 
 #define game variables
 level = 1
-start_intro = True
+start_game = False
+pause_game = False
+start_intro = False
 screen_scroll = [0, 0]
 
 #define movement variables
@@ -31,12 +36,28 @@ moving_down = False
 #define font, with size
 font = pygame.font.Font('assets/fonts/AtariClassic.ttf', 20)
 
+#load music and sounds
+# https://pygame.org/docs/ref/mixer.html
+pygame.mixer.music.load("assets/audio/music.wav")
+pygame.mixer.music.set_volume(0.2)
+pygame.mixer.music.play(-1,0.0,5000)
+#sound effects
+shot_fx = pygame.mixer.Sound("assets/audio/arrow_shot.mp3")
+shot_fx.set_volume(0.5)
+shot_hit_fx = pygame.mixer.Sound("assets/audio/arrow_hit.wav")
+shot_hit_fx.set_volume(0.5)
+coin_fx = pygame.mixer.Sound("assets/audio/coin.wav")
+coin_fx.set_volume(0.5)
+heal_fx = pygame.mixer.Sound("assets/audio/heal.wav")
+heal_fx.set_volume(0.5)
+
 # get images from separate file to pair down main.py
 weapon, arrow_image, fireball_image = images.weapon()
 heart_empty, heart_half, heart_full = images.health()
 item_images, coin_images = images.items()
 mob_animations = images.mob_animation()
 tile_list = images.tiles()
+restart_img, resume_img, start_img, exit_img = images.button()
 
 #function for outputting text on screen
 def draw_text(text, font, text_color, x, y):
@@ -165,89 +186,114 @@ damage_text_group, arrow_group, item_group, fireball_group, world, player, bow, 
 intro_fade = ScreenFade(1, constants.BLACK, 5)
 death_fade = ScreenFade(2, constants.PINK, 7)
 
+#create buttons 
+restart_button = Button(constants.SCREEN_WIDTH // 2 - 175, constants.SCREEN_HEIGHT // 2 - 50, restart_img)
+start_button = Button(constants.SCREEN_WIDTH // 2 - 145, constants.SCREEN_HEIGHT // 2 - 50, start_img)
+exit_button = Button(constants.SCREEN_WIDTH // 2 - 110, constants.SCREEN_HEIGHT // 2 + 50, exit_img)
+resume_button = Button(constants.SCREEN_WIDTH // 2 - 175, constants.SCREEN_HEIGHT // 2 - 150, resume_img)
+
 #main game loop
 run = True
 while run:
     #control frame rate
     clock.tick(constants.FPS)
-    #clears screen by creating the bg with every while loop update
-    screen.fill(constants.BG)
 
-    if player.alive:
-        #calculate player movement (delta x, delta y)
-        dx = 0
-        dy = 0
-        if moving_right == True:
-            dx = constants.SPEED
-        if moving_left == True:
-            dx = -constants.SPEED
-        if moving_up == True:
-            dy = -constants.SPEED
-        if moving_down == True:
-            dy = constants.SPEED
+    if start_game == False:
+        screen.fill(constants.MENU_BG)
+        if start_button.draw(screen):
+            start_game = True
+            start_intro = True
+        if exit_button.draw(screen):
+            run = False
+    else:
+        if pause_game:
+            screen.fill(constants.MENU_BG)
+            if resume_button.draw(screen):
+                pause_game = False
+            if exit_button.draw(screen):
+                run = False
+        else:
+            #clears screen by creating the bg with every while loop update
+            screen.fill(constants.BG)
 
-        #move player
-        screen_scroll, level_complete = player.move(dx, dy, world.obstacle_tiles, world.exit_tile)
+            if player.alive:
+                #calculate player movement (delta x, delta y)
+                dx = 0
+                dy = 0
+                if moving_right == True:
+                    dx = constants.SPEED
+                if moving_left == True:
+                    dx = -constants.SPEED
+                if moving_up == True:
+                    dy = -constants.SPEED
+                if moving_down == True:
+                    dy = constants.SPEED
 
-        #update all objects
-        world.update(screen_scroll)
-        for enemy in enemy_list:
-            fireball = enemy.ai(player, world.obstacle_tiles, screen_scroll, fireball_image)
-            if fireball:
-                fireball_group.add(fireball)
-            if enemy.alive:
-                enemy.update()
-        player.update()
-        arrow = bow.update(player)
-        if arrow:
-            arrow_group.add(arrow)
-        for arrow in arrow_group:
-            damage, damage_pos = arrow.update(screen_scroll, world.obstacle_tiles, enemy_list)
-            if damage:
-                damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), constants.RED)
-                damage_text_group.add(damage_text)
-        damage_text_group.update()
-        fireball_group.update(screen_scroll, player)
-        item_group.update(screen_scroll, player)
+                #move player
+                screen_scroll, level_complete = player.move(dx, dy, world.obstacle_tiles, world.exit_tile)
 
-    #draw world
-    world.draw(screen)
-    #draw enemies
-    for enemy in enemy_list:
-        enemy.draw(screen)
-    #draw player on screen
-    player.draw(screen)
-    bow.draw(screen)
-    for arrow in arrow_group:
-        arrow.draw(screen)
-    damage_text_group.draw(screen)
-    fireball_group.draw(screen)
-    item_group.draw(screen)
-    draw_info()
-    score_coin.draw(screen)
-    #check level_complete
-    if level_complete:
-        start_intro = True
-        level += 1
-        #save previous player info
-        current_health = player.health
-        current_score = player.score
-        #recreate the world
-        damage_text_group, arrow_group, item_group, fireball_group, world, player, bow, enemy_list, score_coin = world_building()
-        #reset player info
-        player.health = current_health
-        player.score = current_score
+                #update all objects
+                world.update(screen_scroll)
+                for enemy in enemy_list:
+                    fireball = enemy.ai(player, world.obstacle_tiles, screen_scroll, fireball_image)
+                    if fireball:
+                        fireball_group.add(fireball)
+                    if enemy.alive:
+                        enemy.update()
+                player.update()
+                arrow = bow.update(player)
+                if arrow:
+                    arrow_group.add(arrow)
+                    shot_fx.play()
+                for arrow in arrow_group:
+                    damage, damage_pos = arrow.update(screen_scroll, world.obstacle_tiles, enemy_list)
+                    if damage:
+                        damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), constants.RED)
+                        damage_text_group.add(damage_text)
+                        shot_hit_fx.play()
+                damage_text_group.update()
+                fireball_group.update(screen_scroll, player)
+                item_group.update(screen_scroll, player, coin_fx, heal_fx)
 
-    #intro fade
-    if start_intro and intro_fade.fade():
-        start_intro = False
-        intro_fade.fade_counter = 0
-    #death screen 
-    if player.alive == False and death_fade.fade():
-        intro_fade.fade_counter = 0
-        start_intro = True
-        #recreate the world
-        damage_text_group, arrow_group, item_group, fireball_group, world, player, bow, enemy_list, score_coin = world_building()
+            #draw world
+            world.draw(screen)
+            #draw enemies
+            for enemy in enemy_list:
+                enemy.draw(screen)
+            #draw player on screen
+            player.draw(screen)
+            bow.draw(screen)
+            for arrow in arrow_group:
+                arrow.draw(screen)
+            damage_text_group.draw(screen)
+            fireball_group.draw(screen)
+            item_group.draw(screen)
+            draw_info()
+            score_coin.draw(screen)
+            #check level_complete
+            if level_complete:
+                start_intro = True
+                level += 1
+                #save previous player info
+                current_health = player.health
+                current_score = player.score
+                #recreate the world
+                damage_text_group, arrow_group, item_group, fireball_group, world, player, bow, enemy_list, score_coin = world_building()
+                #reset player info
+                player.health = current_health
+                player.score = current_score
+
+            #intro fade
+            if start_intro and intro_fade.fade():
+                start_intro = False
+                intro_fade.fade_counter = 0
+            #death screen 
+            if player.alive == False and death_fade.fade():
+                if restart_button.draw(screen):
+                    intro_fade.fade_counter = 0
+                    start_intro = True
+                    #recreate the world
+                    damage_text_group, arrow_group, item_group, fireball_group, world, player, bow, enemy_list, score_coin = world_building()
 
     #event handler for exiting
     for event in pygame.event.get():
@@ -263,6 +309,8 @@ while run:
                 moving_up = True
             if event.key == pygame.K_s:
                 moving_down = True
+            if event.key == pygame.K_ESCAPE:
+                pause_game = True
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 moving_left = False
