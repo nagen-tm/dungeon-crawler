@@ -78,6 +78,43 @@ def reset_level():
 
     return data
 
+#create the world function
+#put this code togther because it is used multiple times
+def world_building():
+    world_data = []
+    for row in range(constants.ROWS):
+        r = [-1] * constants.COLS
+        world_data.append(r)
+    #load files created from a level editor
+    with open(f"levels/level{level}_data.csv", newline="") as csvfile:
+        reader = csv.reader(csvfile, delimiter= ",")
+        for x, row in enumerate(reader): 
+            for y, tile in enumerate(row):
+                world_data[x][y] = int(tile)
+
+    world = World()
+    world.process_data(world_data, tile_list, item_images, mob_animations)
+
+    #create instances
+    player = world.player
+    bow = Weapon(weapon, arrow_image)
+    enemy_list = world.enemy_list
+
+    #create groups
+    damage_text_group = pygame.sprite.Group()
+    arrow_group = pygame.sprite.Group()
+    item_group = pygame.sprite.Group()
+    fireball_group = pygame.sprite.Group()
+
+    #static coin for score
+    score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
+    item_group.add(score_coin)
+    #add items from level data
+    for item in world.item_list:
+        item_group.add(item)
+
+    return damage_text_group, arrow_group, item_group, fireball_group, world, player, bow, enemy_list, score_coin
+
 #damage text class
 class DamageText(pygame.sprite.Sprite):
     def __init__(self, x, y, damage, color):
@@ -99,6 +136,7 @@ class DamageText(pygame.sprite.Sprite):
         if self.counter > 25:
             self.kill()
 
+#different screen fades
 class ScreenFade():
     def __init__(self, direction, color, speed):
         self.direction = direction
@@ -120,38 +158,8 @@ class ScreenFade():
             fade_complete = True
         return fade_complete
 
-#create the empty tile list that will be overriden by file
-world_data = []
-for row in range(constants.ROWS):
-    r = [-1] * constants.COLS
-    world_data.append(r)
-#load files created from a level editor
-with open(f"levels/level{level}_data.csv", newline="") as csvfile:
-    reader = csv.reader(csvfile, delimiter= ",")
-    for x, row in enumerate(reader): 
-        for y, tile in enumerate(row):
-            world_data[x][y] = int(tile)
-
-world = World()
-world.process_data(world_data, tile_list, item_images, mob_animations)
-
-#create instances
-player = world.player
-bow = Weapon(weapon, arrow_image)
-enemy_list = world.enemy_list
-
-#create groups
-damage_text_group = pygame.sprite.Group()
-arrow_group = pygame.sprite.Group()
-item_group = pygame.sprite.Group()
-fireball_group = pygame.sprite.Group()
-
-#static coin for score
-score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
-item_group.add(score_coin)
-#add items from level data
-for item in world.item_list:
-    item_group.add(item)
+# call the world building function to create everything
+damage_text_group, arrow_group, item_group, fireball_group, world, player, bow, enemy_list, score_coin = world_building()
 
 #create screen fade
 intro_fade = ScreenFade(1, constants.BLACK, 5)
@@ -221,27 +229,14 @@ while run:
     if level_complete:
         start_intro = True
         level += 1
-        world_data = reset_level()
-        with open(f"levels/level{level}_data.csv", newline="") as csvfile:
-            reader = csv.reader(csvfile, delimiter= ",")
-            for x, row in enumerate(reader): 
-                for y, tile in enumerate(row):
-                    world_data[x][y] = int(tile)
-        world = World()
-        world.process_data(world_data, tile_list, item_images, mob_animations)
+        #save previous player info
         current_health = player.health
         current_score = player.score
-        player = world.player
+        #recreate the world
+        damage_text_group, arrow_group, item_group, fireball_group, world, player, bow, enemy_list, score_coin = world_building()
+        #reset player info
         player.health = current_health
         player.score = current_score
-        bow = Weapon(weapon, arrow_image)
-        enemy_list = world.enemy_list
-        #static coin for score
-        score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
-        item_group.add(score_coin)
-        #add items from level data
-        for item in world.item_list:
-            item_group.add(item)
 
     #intro fade
     if start_intro and intro_fade.fade():
@@ -251,23 +246,8 @@ while run:
     if player.alive == False and death_fade.fade():
         intro_fade.fade_counter = 0
         start_intro = True
-        world_data = reset_level()
-        with open(f"levels/level{level}_data.csv", newline="") as csvfile:
-            reader = csv.reader(csvfile, delimiter= ",")
-            for x, row in enumerate(reader): 
-                for y, tile in enumerate(row):
-                    world_data[x][y] = int(tile)
-        world = World()
-        world.process_data(world_data, tile_list, item_images, mob_animations)
-        player = world.player
-        bow = Weapon(weapon, arrow_image)
-        enemy_list = world.enemy_list
-        #static coin for score
-        score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
-        item_group.add(score_coin)
-        #add items from level data
-        for item in world.item_list:
-            item_group.add(item)
+        #recreate the world
+        damage_text_group, arrow_group, item_group, fireball_group, world, player, bow, enemy_list, score_coin = world_building()
 
     #event handler for exiting
     for event in pygame.event.get():
