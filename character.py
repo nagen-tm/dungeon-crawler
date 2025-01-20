@@ -31,8 +31,9 @@ class Character():
         self.stunned = False
 
     #update the movement before drawing
-    def move(self, dx, dy, obstacle_tiles):
+    def move(self, dx, dy, obstacle_tiles, exit_tile = None):
         screen_scroll = [0,0]
+        level_complete = False
         #reset the movement to idle, then check movement
         self.running = False
         if dx != 0 or dy != 0:
@@ -65,7 +66,14 @@ class Character():
                     self.rect.top = obstacle[1].bottom
 
         #do we need to scroll the screen for the player
+        #all player specific movment here
         if self.char_type == 0:
+            #check collision with exit tile
+            if exit_tile[1].colliderect(self.rect):
+                #ensure player is close to the ladder
+                exit_dist = math.sqrt(((self.rect.centerx - exit_tile[1].centerx) ** 2) + ((self.rect.centery - exit_tile[1].centery) ** 2))
+                if exit_dist < 20:
+                    level_complete = True
             #move left and right
             right_offset = constants.SCREEN_WIDTH - constants.SCROLL_THRESHOLD
             if self.rect.right > right_offset:
@@ -83,7 +91,8 @@ class Character():
                 screen_scroll[1] = constants.SCROLL_THRESHOLD - self.rect.top
                 self.rect.top = constants.SCROLL_THRESHOLD
 
-        return screen_scroll
+
+        return screen_scroll, level_complete
     
     def ai(self, player, obstacle_tiles, screen_scroll, fireball_image):
         clipped_line = ()

@@ -1,4 +1,4 @@
-#Constants for whole game
+
 
 #Game creation
 SCREEN_WIDTH = 800
@@ -31,3 +31,5 @@ WHITE = (255,255,255)
 RED = (255,0,0)
 BG = (40,25,25)
 PANEL = (50, 50, 50)
+BLACK = (0,0,0)
+PINK = (235,65,54)
