@@ -16,8 +16,8 @@ Working through [Udemy Tutorial](https://www.udemy.com/course/pygame-dungeon-cra
 - [x] Adding additional character elements
 - [x] Create levels
 - [x] Build enemies with AI movement
-- [ ] Add game menus
-- [ ] Add sounds
+- [x] Add game menus
+- [x] Add sounds
 
 ## Notes
 - comments are put throughout
@@ -25,3 +25,6 @@ Working through [Udemy Tutorial](https://www.udemy.com/course/pygame-dungeon-cra
 - the math was done really quickly with not much explanation [docs](https://www.pygame.org/docs/ref/math.html)
 - built in sprite capabilities also glossed over for the arrows [docs](https://www.pygame.org/docs/ref/sprite.html)
 - level editors help to build levels, suggested from course: [Tiled](https://www.mapeditor.org/)
+
+## Completetion
+<img src="cert.jpg" height="200" />

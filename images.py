@@ -56,3 +56,10 @@ def tiles():
         tile_img = pygame.transform.scale(tile_img, (constants.TILE_SIZE, constants.TILE_SIZE))
         tile_list.append(tile_img)
     return tile_list
+
+def button():
+    restart_img = scale_img(pygame.image.load(f"assets/images/buttons/button_restart.png").convert_alpha(), constants.BUTTON_SCALE)
+    resume_img = scale_img(pygame.image.load(f"assets/images/buttons/button_resume.png").convert_alpha(), constants.BUTTON_SCALE)
+    start_img = scale_img(pygame.image.load(f"assets/images/buttons/button_start.png").convert_alpha(), constants.BUTTON_SCALE)
+    exit_img = scale_img(pygame.image.load(f"assets/images/buttons/button_exit.png").convert_alpha(), constants.BUTTON_SCALE)
+    return restart_img, resume_img, start_img, exit_img

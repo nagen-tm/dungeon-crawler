@@ -1,5 +1,3 @@
-#Constants for whole game
-
 #Game creation
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -15,6 +13,7 @@ WEAPON_SCALE = 1.5
 ITEM_SCALE = 3
 POTION_SCALE = 2
 FIREBALL_SCALE = 1
+BUTTON_SCALE = 1
 #world stuff
 OFFSET = 12
 TILE_SIZE = 16 * SCALE
@@ -30,4 +29,7 @@ ATTACK_RANGE = 60
 WHITE = (255,255,255)
 RED = (255,0,0)
 BG = (40,25,25)
+MENU_BG = (130,0,0)
 PANEL = (50, 50, 50)
+BLACK = (0,0,0)
+PINK = (235,65,54)
